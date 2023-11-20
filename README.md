@@ -5,6 +5,8 @@ this telegram bot created using node.js
 
 download ngrok
 <p>https://ngrok.com/download</p>
+<p>After extracting the ngrok file open file location unsing cmd and type <b>ngrok http port number</b></p>
+
 
 download postman
 
