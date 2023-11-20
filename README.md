@@ -6,3 +6,5 @@ this telegram bot created using node.js
 download ngrok
 <p>https://ngrok.com/download</p>
 
+download postman
+
