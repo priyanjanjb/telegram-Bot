@@ -36,6 +36,10 @@ async function handleMessage(messageObj) {
 
         switch (command) {
           // Existing cases...
+          case "help":
+            return sendMessage(`Enter /stock_Number to enter Stock Number
+            Enter /contract_Number to enter Contract Number
+            Enter /season to enter Season`);
 
           case "stock_Number":
             userResponses[chatId] = { stockNumber: true };
