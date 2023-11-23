@@ -5,10 +5,12 @@ const MY_TOKEN = process.env.TELE_BOT_TOKEN;
 const BASE_URL = `https://api.telegram.org/bot${MY_TOKEN}`;
 const axiosInstance = getAxiosInstance(BASE_URL);
 
+let userResponses = {}; // Store user responses in a dictionary
+
 function sendMessage(chatId, messageText) {
   return axiosInstance
     .get("sendMessage", {
-      chat_id: chatId || MY_GROUP_CHAT_ID,
+      chat_id: chatId,
       text: messageText,
     })
     .catch((ex) => {
@@ -18,45 +20,35 @@ function sendMessage(chatId, messageText) {
 
 async function handleMessage(messageObj) {
   const messageText = messageObj.text || "";
+  const chatId = messageObj.chat.id;
 
   if (!messageText) {
     errorHandler("messageText is empty", "handleMessage");
     return ""; // Return empty string
   }
 
-  // Save user input in a variable
-  const userInput = messageText.trim(); // Trim to remove leading/trailing whitespaces
+  const userInput = messageText.trim();
 
   try {
-    const chatId = messageObj.chat.id;
     if (chatId === 5160219595 || chatId === -4064546335) {
       if (userInput.charAt(0) === "/") {
         const command = userInput.substring(1);
 
         switch (command) {
-          case "start":
-            return sendMessage(
-              chatId,
-              `Welcome to bot manager
-              Use /stock_Number to Enter Stock Number
-              Use /contract_Number to Enter Contract Number,
-              Use /season to Enter Season`
-            );
-          case "help":
-            return sendMessage(
-              chatId,
-              `How can I help you?
-            Those commands that you can use:
-            /start - to start the bot
-            /help - to see all commands`
-            );
+          // Existing cases...
 
           case "stock_Number":
+            userResponses[chatId] = { stockNumber: true };
             return sendMessage(chatId, `Enter Stock Number`);
+
           case "contract_Number":
+            userResponses[chatId] = { contractNumber: true };
             return sendMessage(chatId, `Enter Contract Number`);
+
           case "season":
+            userResponses[chatId] = { season: true };
             return sendMessage(chatId, `Enter Season`);
+
           default:
             return sendMessage(
               chatId,
@@ -64,10 +56,37 @@ async function handleMessage(messageObj) {
             );
         }
       } else {
-        // If it's not a command, save the user input or process it as needed
-        // For example, you can save it in a database or perform some other action
-        // Here, I'm just returning the user input in a response message
-        return sendMessage(chatId, `You entered: ${userInput}`);
+        // If it's not a command, check if the user is in the process of entering data
+        if (userResponses[chatId]) {
+          const responseKey = Object.keys(userResponses[chatId])[0];
+
+          // Handle the user response based on the previous command
+          switch (responseKey) {
+            case "stockNumber":
+              // Process stock number (e.g., save it to a database)
+              userResponses[chatId] = {};
+              return sendMessage(chatId, `Stock Number entered: ${userInput}`);
+
+            case "contractNumber":
+              // Process contract number
+              userResponses[chatId] = {};
+              return sendMessage(
+                chatId,
+                `Contract Number entered: ${userInput}`
+              );
+
+            case "season":
+              // Process season
+              userResponses[chatId] = {};
+              return sendMessage(chatId, `Season entered: ${userInput}`);
+
+            default:
+              return sendMessage(chatId, `You entered: ${userInput}`);
+          }
+        } else {
+          // If the user is not in the process of entering data, handle as needed
+          return sendMessage(chatId, `You entered: ${userInput}`);
+        }
       }
     } else {
       return sendMessage(chatId, "You are not authorized to use this bot");
